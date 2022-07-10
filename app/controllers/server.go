@@ -3,24 +3,28 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"text/template"
-	"time"
+	"todobff/app/SessionInfo"
 	"todobff/config"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
+
+var LoginInfo SessionInfo.Session
 
 func initProvider() (func(context.Context) error, error) {
 	ctx := context.Background()
@@ -33,21 +37,29 @@ func initProvider() (func(context.Context) error, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(ctx, 100*time.Second)
+	// defer cancel()
 
 	var tracerProvider *sdktrace.TracerProvider
 
-	conn, err := grpc.DialContext(ctx, "otel-collector-collector.tracing.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
-	if err != nil {
-		return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
-	}
+	traceExporter, _ := stdouttrace.New(
+		stdouttrace.WithPrettyPrint(),
+		// stdouttrace.WithWriter(os.Stderr),
+		stdouttrace.WithWriter(io.Discard),
+	)
 
-	// Set up a trace exporter
-	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create trace exporter: %w", err)
-	}
+	/*
+		conn, err := grpc.DialContext(ctx, "otel-collector-collector.tracing.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+		if err != nil {
+			return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
+		}
+
+		// Set up a trace exporter
+		traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create trace exporter: %w", err)
+		}
+	*/
 
 	// idg := xray.NewIDGenerator()
 
@@ -79,8 +91,13 @@ func generateHTML(c *gin.Context, data interface{}, procname string, filenames .
 }
 
 var tracer = otel.Tracer("TodoBFF")
+var EpUserApi = config.Config.EpUserApi
+var EpTodoAPI = config.Config.EpTodoApi
 
 func StartMainServer() {
+	fmt.Println("info: Start Server" + "port: " + config.Config.Port)
+
+	// コンテキスト生成
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -98,18 +115,65 @@ func StartMainServer() {
 	// router 設定
 	r := gin.New()
 
+	// Custom Middleware 設定
 	r.Use(otelgin.Middleware("TodoBFF-server"))
+
+	store := cookie.NewStore([]byte("secret"))
+	r.Use(sessions.Sessions("mysession", store))
 
 	// template 設定
 	r.LoadHTMLGlob(config.Config.Static + "/templates/*")
 	r.Static("/static/", config.Config.Static)
 
 	//--- handler 設定
-	// r.GET("/", top)
+	r.GET("/", top)
+	r.GET("/login", getLogin)
+	r.POST("/login", postLogin)
 
 	r.GET("/signup", getSignup)
 	r.POST("/signup", postSignup)
 
-	r.Run(":" + config.Config.Port)
+	/*
+		rTodos := r.Group("/menu")
+		rTodos.Use(checkSession())
+		{
+			rTodos.GET("/todos", getIndex)
+			rTodos.GET("/todos/new", getTodoNew)
+			rTodos.POST("/todos/save", postTodoSave)
+			rTodos.GET("/todos/edit/:id", parseURL(getTodoEdit))
+			rTodos.POST("/todos/update/:id", parseURL(postTodoUpdate))
+			rTodos.GET("/todos/delete/:id", parseURL(getTodoDelete))
+		}
+	*/
+	r.GET("/logout", getLogout)
 
+	r.Run(":" + config.Config.Port)
+}
+
+func checkSession() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		_, span := tracer.Start(c.Request.Context(), "セッションチェック開始")
+		defer span.End()
+
+		log.Println("セッションチェック開始")
+
+		session := sessions.Default(c)
+		LoginInfo.UserID = session.Get("UserId")
+
+		if LoginInfo.UserID == nil {
+			log.Println("ログインしていません")
+
+			c.Redirect(http.StatusMovedPermanently, "/login")
+			c.Abort()
+		} else {
+			c.Set("UserId", LoginInfo.UserID) // ユーザIDをセット
+			c.Next()
+		}
+
+		_, span = tracer.Start(c.Request.Context(), "セッションチェック終了")
+		defer span.End()
+
+		log.Println("セッションチェック終了")
+	}
 }

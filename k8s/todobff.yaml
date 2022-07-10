@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todobff
+spec:
+  selector:
+    app: todobff
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todobff
+  labels:
+    app: todobff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todobff
+  template:
+    metadata:
+      labels:
+        app: todobff
+    spec:
+      containers:
+        - name: todobff
+          image: registry.gitlab.com/keisuke.sakasai/todobff:latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: regcred
