@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +14,7 @@ import (
 )
 
 func StartMainServer() {
-	fmt.Println("info: Start Server" + "port: " + serverPort)
+	log.Println("info: Start Server" + "port: " + serverPort)
 
 	// コンテキスト生成
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -49,7 +48,6 @@ func StartMainServer() {
 	r.GET("/", top)
 	r.GET("/login", getLogin)
 	r.POST("/login", postLogin)
-
 	r.GET("/signup", getSignup)
 	r.POST("/signup", postSignup)
 
@@ -63,6 +61,7 @@ func StartMainServer() {
 		rTodos.POST("/todos/update/:id", parseURL(postTodoUpdate))
 		rTodos.GET("/todos/delete/:id", parseURL(getTodoDelete))
 	}
+
 	r.GET("/logout", getLogout)
 
 	r.Run(":" + serverPort)
@@ -78,11 +77,11 @@ func checkSession() gin.HandlerFunc {
 		LoginInfo.UserID = session.Get("UserId")
 
 		if LoginInfo.UserID == nil {
-			log.Println("ログインしていません")
-
+			log.Println(LoginInfo.UserID.(string) + " はログインしていません")
 			c.Redirect(http.StatusMovedPermanently, "/login")
 			c.Abort()
 		} else {
+			log.Println(LoginInfo.UserID.(string) + " をセッション ID にセットしました")
 			c.Set("UserId", LoginInfo.UserID) // ユーザIDをセット
 			c.Next()
 		}

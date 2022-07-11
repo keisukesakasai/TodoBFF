@@ -16,21 +16,22 @@ import (
 func getSignup(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ユーザ登録画面取得")
 	defer span.End()
-
 	log.Println("ユーザ登録画面取得")
+
 	generateHTML(c, nil, "signup", "layout", "signup", "public_navbar")
 }
 
 func postSignup(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ユーザ登録")
 	defer span.End()
+	log.Println("ユーザ登録")
 
 	err := c.Request.ParseForm()
 	if err != nil {
 		log.Println(err)
 	}
 
-	// UserAPI createUser rpc 実行
+	//--- UserAPI createUser への Post
 	name := c.Request.PostFormValue("name")
 	email := c.Request.PostFormValue("email")
 	password := c.Request.PostFormValue("password")
@@ -39,6 +40,10 @@ func postSignup(c *gin.Context) {
 	"Email":"` + email + `",
 	"PassWord":"` + password + `"}`
 
+	_, span = tracer.Start(c.Request.Context(), "UserAPI /createUser にポスト")
+	defer span.End()
+	log.Println("UserAPI /createUser にポスト")
+
 	rsp, err := otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/createUser",
@@ -46,45 +51,48 @@ func postSignup(c *gin.Context) {
 		bytes.NewBuffer([]byte(jsonStr)),
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	defer rsp.Body.Close()
-
 	body, _ := ioutil.ReadAll(rsp.Body)
-	fmt.Println(string(body))
+	log.Println(string(body))
 
 	UserId := email
-	log.Println("ログイン処理")
 	login(c, UserId)
 
 	_, span = tracer.Start(c.Request.Context(), "TODO画面にリダイレクト")
 	defer span.End()
-
 	log.Println("TODO画面にリダイレクト")
+
 	c.Redirect(http.StatusMovedPermanently, "/menu/todos")
 }
 
 func getLogin(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ログイン画面取得")
 	defer span.End()
-
 	log.Println("ログイン画面取得")
+
 	generateHTML(c, nil, "login", "layout", "login", "public_navbar")
 }
 
 func postLogin(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ログイン")
 	defer span.End()
+	log.Println("ログイン")
 
 	err := c.Request.ParseForm()
 	if err != nil {
 		log.Println(err)
 	}
 
-	// UserAPI getUserByEmail rpc 実行
+	//--- UserAPI getUserByEmail への Post
 	email := c.Request.PostFormValue("email")
 	jsonStr := `{"Email":"` + email + `"}`
+
+	_, span = tracer.Start(c.Request.Context(), "UserAPI /getUserByEmail にポスト")
+	defer span.End()
+	log.Println("UserAPI /getUserByEmail にポスト")
 
 	rsp, err := otelhttp.Post(
 		c.Request.Context(),
@@ -104,11 +112,14 @@ func postLogin(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(responseGetUser)
 
-	// UserAPI encrypt rpc 実行
+	//--- UserAPI encrypt への Post
 	password := c.Request.PostFormValue("password")
 	jsonStr = `{"PassWord":"` + password + `"}`
+
+	_, span = tracer.Start(c.Request.Context(), "UserAPI /encrypt にポスト")
+	defer span.End()
+	log.Println("UserAPI /encrypt にポスト")
 
 	rsp, err = otelhttp.Post(
 		c.Request.Context(),
@@ -130,17 +141,29 @@ func postLogin(c *gin.Context) {
 	}
 
 	if responseGetUser.ID == 0 {
-		log.Println(err)
 		log.Println("ユーザがいません")
+
+		_, span = tracer.Start(c.Request.Context(), "ログイン画面にリダイレクト")
+		defer span.End()
+		log.Println("ログイン画面にリダイレクト")
+
 		c.Redirect(http.StatusFound, "/login")
 	} else if responseEncrypt.PassWord == responseGetUser.PassWord {
 		UserId := c.PostForm("email")
-		log.Println("ログイン処理")
 		login(c, UserId)
-		c.SetCookie("UserId", UserId, 60, "/", "localhost", false, true)
+
+		_, span = tracer.Start(c.Request.Context(), "TODO画面にリダイレクト")
+		defer span.End()
+		log.Println("TODO画面にリダイレクト")
+
 		c.Redirect(http.StatusMovedPermanently, "/menu/todos")
 	} else {
 		log.Println("PW が間違っています")
+
+		_, span = tracer.Start(c.Request.Context(), "ログイン画面にリダイレクト")
+		defer span.End()
+		log.Println("ログイン画面にリダイレクト")
+
 		c.Redirect(http.StatusFound, "/login")
 	}
 }
@@ -153,27 +176,51 @@ func getLogout(c *gin.Context) {
 
 	_, span = tracer.Start(c.Request.Context(), "TOP画面にリダイレクト")
 	defer span.End()
-
 	log.Println("TOP画面にリダイレクト")
+
 	c.Redirect(http.StatusMovedPermanently, "/")
 }
 
 func login(c *gin.Context, UserId string) {
 	_, span := tracer.Start(c.Request.Context(), "ログイン処理...")
 	defer span.End()
+	log.Println("ログイン処理...")
 
 	session := sessions.Default(c)
+
+	_, span = tracer.Start(c.Request.Context(), "セッション設定")
+	defer span.End()
+	log.Println("セッション設定")
+
 	session.Set("UserId", UserId)
+
+	_, span = tracer.Start(c.Request.Context(), "セッション保存")
+	defer span.End()
+	log.Println("セッション保存")
+
 	session.Save()
-	log.Println("ログイン")
+
+	log.Println("ログイン完了")
 }
 
 func logout(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ログアウト処理...")
 	defer span.End()
+	log.Println("ログアウト処理...")
 
 	session := sessions.Default(c)
+
+	_, span = tracer.Start(c.Request.Context(), "セッションクリア")
+	defer span.End()
+	log.Println("セッションクリア")
+
 	session.Clear()
+
+	_, span = tracer.Start(c.Request.Context(), "セッション保存")
+	defer span.End()
+	log.Println("セッション保存")
+
 	session.Save()
-	log.Println("ログアウト")
+
+	log.Println("ログアウト完了")
 }
