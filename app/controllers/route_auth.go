@@ -43,7 +43,7 @@ func postSignup(c *gin.Context) {
 		log.Println(err)
 	}
 
-	// POST
+	// UserAPI createUser rpc 実行
 	name := c.Request.PostFormValue("name")
 	email := c.Request.PostFormValue("email")
 	password := c.Request.PostFormValue("password")
@@ -95,7 +95,7 @@ func postLogin(c *gin.Context) {
 		log.Println(err)
 	}
 
-	// getUserByEmail rpc 実行
+	// UserAPI getUserByEmail rpc 実行
 	email := c.Request.PostFormValue("email")
 	jsonStr := `{"Email":"` + email + `"}`
 
@@ -119,7 +119,7 @@ func postLogin(c *gin.Context) {
 	}
 	log.Println(responseGetUser)
 
-	// encrypt rpc 実行
+	// UserAPI encrypt rpc 実行
 	password := c.Request.PostFormValue("password")
 	jsonStr = `{"PassWord":"` + password + `"}`
 
@@ -172,7 +172,7 @@ func getLogout(c *gin.Context) {
 }
 
 func login(c *gin.Context, UserId string) {
-	_, span := tracer.Start(c.Request.Context(), "ログイン処理")
+	_, span := tracer.Start(c.Request.Context(), "ログイン処理...")
 	defer span.End()
 
 	session := sessions.Default(c)
@@ -182,7 +182,7 @@ func login(c *gin.Context, UserId string) {
 }
 
 func logout(c *gin.Context) {
-	_, span := tracer.Start(c.Request.Context(), "ログアウト処理")
+	_, span := tracer.Start(c.Request.Context(), "ログアウト処理...")
 	defer span.End()
 
 	session := sessions.Default(c)
