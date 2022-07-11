@@ -3,10 +3,13 @@ module todobff
 go 1.17
 
 require (
+	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.8.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.33.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.33.0
 	go.opentelemetry.io/otel v1.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.8.0
 	go.opentelemetry.io/otel/sdk v1.8.0
 	google.golang.org/grpc v1.47.0
 	gopkg.in/go-ini/ini.v1 v1.66.6
@@ -15,7 +18,6 @@ require (
 require (
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
-	github.com/gin-contrib/sessions v0.0.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -35,10 +37,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.33.0 // indirect
+	go.opentelemetry.io/contrib/propagators/aws v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.8.0 // indirect
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.8.0 // indirect
 	go.opentelemetry.io/otel/metric v0.31.0 // indirect
 	go.opentelemetry.io/otel/trace v1.8.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.18.0 // indirect

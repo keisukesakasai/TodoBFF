@@ -13,19 +13,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-type ResponseGetUser struct {
-	ID        int    `json:"ID"`
-	UUID      string `json:"UUID"`
-	Name      string `json:"Name"`
-	Email     string `json:"Email"`
-	PassWord  string `json:"PassWord"`
-	CreatedAt string `json:"CreatedAt"`
-}
-
-type ResponseEncrypt struct {
-	PassWord string `json:"PassWord"`
-}
-
 func getSignup(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ユーザ登録画面取得")
 	defer span.End()

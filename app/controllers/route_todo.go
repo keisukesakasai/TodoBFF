@@ -8,51 +8,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
-
-type User struct {
-	ID        int
-	UUID      string
-	Name      string
-	Email     string
-	PassWord  string
-	CreatedAt time.Time
-	Todos     []Todo
-}
-
-type Todo struct {
-	ID        int
-	Content   string
-	UserID    int
-	CreatedAt time.Time
-}
-
-type Todos struct {
-	Todos []Todo
-}
-
-type getTodosByUserResponse struct {
-	Todos []Todo `json:"todos"`
-}
-
-type getTodoResponse struct {
-	ID        int       `json:"ID"`
-	Content   string    `json:"Content"`
-	UserID    int       `json:"UserID"`
-	CreatedAt time.Time `json:"CreatedAt"`
-}
-
-type updateTodoResponse struct {
-	Content string `json:"Content"`
-}
-
-type deleteTodoResponse struct {
-	ResultCode string `json:"resultCode`
-}
 
 func top(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "TOP画面取得")
