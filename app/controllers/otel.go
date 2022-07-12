@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"todobff/config"
 
+	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -14,6 +16,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -35,6 +38,7 @@ func initProvider() (func(context.Context) error, error) {
 	var tracerProvider *sdktrace.TracerProvider
 
 	if deployEnv == "local" {
+		log.Println("Deploy Mode: " + "local")
 		traceExporter, _ := stdouttrace.New(
 			stdouttrace.WithPrettyPrint(),
 			// stdouttrace.WithWriter(os.Stderr),
@@ -54,6 +58,7 @@ func initProvider() (func(context.Context) error, error) {
 	}
 
 	if deployEnv == "prod" {
+		log.Println("Deploy Mode: " + "Prod")
 		conn, err := grpc.DialContext(ctx, "otel-collector-collector.tracing.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 		if err != nil {
 			return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
@@ -66,6 +71,7 @@ func initProvider() (func(context.Context) error, error) {
 		}
 
 		if config.Config.TraceBackend == "jaeger" {
+			log.Println("TraceBackend Mode: " + "Jaeger")
 			bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
 			tracerProvider = sdktrace.NewTracerProvider(
 				sdktrace.WithSampler(sdktrace.AlwaysSample()),
@@ -75,6 +81,7 @@ func initProvider() (func(context.Context) error, error) {
 		}
 
 		if config.Config.TraceBackend == "xray" {
+			log.Println("TraceBackend Mode: " + "X-Ray")
 			idg := xray.NewIDGenerator()
 
 			bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
@@ -91,4 +98,11 @@ func initProvider() (func(context.Context) error, error) {
 	}
 
 	return tracerProvider.Shutdown, nil
+}
+
+func LogrusFields(span oteltrace.Span) logrus.Fields {
+	return logrus.Fields{
+		"span_id":  span.SpanContext().SpanID().String(),
+		"trace_id": span.SpanContext().TraceID().String(),
+	}
 }

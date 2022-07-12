@@ -10,11 +10,18 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 func StartMainServer() {
 	log.Println("info: Start Server" + "port: " + serverPort)
+
+	// logrus
+	logrus.SetFormatter(&logrus.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
 
 	// コンテキスト生成
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -71,7 +78,8 @@ func checkSession() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, span := tracer.Start(c.Request.Context(), "セッションチェック開始")
 		defer span.End()
-		log.Println("セッションチェック開始")
+		logrus.WithFields(LogrusFields(span)).Info("セッションチェック開始")
+		// log.Println("セッションチェック開始")
 
 		session := sessions.Default(c)
 		LoginInfo.UserID = session.Get("UserId")

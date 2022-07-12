@@ -5,8 +5,10 @@ go 1.17
 require (
 	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.8.1
+	github.com/sirupsen/logrus v1.8.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.33.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.33.0
+	go.opentelemetry.io/contrib/propagators/aws v1.8.0
 	go.opentelemetry.io/otel v1.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.8.0
@@ -37,7 +39,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	go.opentelemetry.io/contrib/propagators/aws v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.8.0 // indirect
 	go.opentelemetry.io/otel/metric v0.31.0 // indirect
