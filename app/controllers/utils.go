@@ -2,14 +2,18 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"text/template"
+	"time"
 	"todobff/app/SessionInfo"
 	"todobff/config"
 
 	"github.com/gin-gonic/gin"
+	oteltrace "go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 var deployEnv = config.Config.Deploy
@@ -51,4 +55,26 @@ func generateHTML(c *gin.Context, data interface{}, procname string, filenames .
 
 	templates := template.Must(template.ParseFiles(files...))
 	templates.ExecuteTemplate(c.Writer, "layout", data)
+}
+
+func Logger(c *gin.Context, msg string, span oteltrace.Span) {
+	start := time.Now()
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logger.Sync()
+	logger.Info("Logger",
+		zap.Int("status", c.Writer.Status()),
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+		zap.String("query", c.Request.URL.RawQuery),
+		zap.String("ip", c.ClientIP()),
+		zap.String("user-agent", c.Request.UserAgent()),
+		zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
+		zap.Duration("elapsed", time.Since(start)),
+		zap.String("message", msg),
+		zap.String("span_id", span.SpanContext().SpanID().String()),
+		zap.String("trace_id", span.SpanContext().TraceID().String()),
+	)
 }

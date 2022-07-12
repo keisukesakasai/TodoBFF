@@ -16,7 +16,8 @@ import (
 func getSignup(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ユーザ登録画面取得")
 	defer span.End()
-	log.Println("ユーザ登録画面取得")
+	Logger(c, "ユーザ登録画面取得", span)
+	// log.Println("ユーザ登録画面取得")
 
 	generateHTML(c, nil, "signup", "layout", "signup", "public_navbar")
 }
@@ -24,7 +25,8 @@ func getSignup(c *gin.Context) {
 func postSignup(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ユーザ登録")
 	defer span.End()
-	log.Println("ユーザ登録")
+	Logger(c, "ユーザ登録", span)
+	// log.Println("ユーザ登録")
 
 	err := c.Request.ParseForm()
 	if err != nil {
@@ -42,7 +44,8 @@ func postSignup(c *gin.Context) {
 
 	_, span = tracer.Start(c.Request.Context(), "UserAPI /createUser にポスト")
 	defer span.End()
-	log.Println("UserAPI /createUser にポスト")
+	Logger(c, "UserAPI /createUser にポスト", span)
+	// log.Println("UserAPI /createUser にポスト")
 
 	rsp, err := otelhttp.Post(
 		c.Request.Context(),
@@ -63,7 +66,8 @@ func postSignup(c *gin.Context) {
 
 	_, span = tracer.Start(c.Request.Context(), "TODO画面にリダイレクト")
 	defer span.End()
-	log.Println("TODO画面にリダイレクト")
+	Logger(c, "TODO画面にリダイレクト", span)
+	// log.Println("TODO画面にリダイレクト")
 
 	c.Redirect(http.StatusMovedPermanently, "/menu/todos")
 }
@@ -71,7 +75,8 @@ func postSignup(c *gin.Context) {
 func getLogin(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ログイン画面取得")
 	defer span.End()
-	log.Println("ログイン画面取得")
+	Logger(c, "ログイン画面取得", span)
+	// log.Println("ログイン画面取得")
 
 	generateHTML(c, nil, "login", "layout", "login", "public_navbar")
 }
@@ -79,7 +84,8 @@ func getLogin(c *gin.Context) {
 func postLogin(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ログイン")
 	defer span.End()
-	log.Println("ログイン")
+	Logger(c, "ログイン", span)
+	// log.Println("ログイン")
 
 	err := c.Request.ParseForm()
 	if err != nil {
@@ -92,7 +98,8 @@ func postLogin(c *gin.Context) {
 
 	_, span = tracer.Start(c.Request.Context(), "UserAPI /getUserByEmail にポスト")
 	defer span.End()
-	log.Println("UserAPI /getUserByEmail にポスト")
+	Logger(c, "UserAPI /getUserByEmail にポスト", span)
+	// log.Println("UserAPI /getUserByEmail にポスト")
 
 	rsp, err := otelhttp.Post(
 		c.Request.Context(),
@@ -119,7 +126,8 @@ func postLogin(c *gin.Context) {
 
 	_, span = tracer.Start(c.Request.Context(), "UserAPI /encrypt にポスト")
 	defer span.End()
-	log.Println("UserAPI /encrypt にポスト")
+	Logger(c, "UserAPI /encrypt にポスト", span)
+	// log.Println("UserAPI /encrypt にポスト")
 
 	rsp, err = otelhttp.Post(
 		c.Request.Context(),
@@ -145,7 +153,8 @@ func postLogin(c *gin.Context) {
 
 		_, span = tracer.Start(c.Request.Context(), "ログイン画面にリダイレクト")
 		defer span.End()
-		log.Println("ログイン画面にリダイレクト")
+		Logger(c, "ログイン画面にリダイレクト", span)
+		// log.Println("ログイン画面にリダイレクト")
 
 		c.Redirect(http.StatusFound, "/login")
 	} else if responseEncrypt.PassWord == responseGetUser.PassWord {
@@ -154,7 +163,8 @@ func postLogin(c *gin.Context) {
 
 		_, span = tracer.Start(c.Request.Context(), "TODO画面にリダイレクト")
 		defer span.End()
-		log.Println("TODO画面にリダイレクト")
+		Logger(c, "TODO画面にリダイレクト", span)
+		// log.Println("TODO画面にリダイレクト")
 
 		c.Redirect(http.StatusMovedPermanently, "/menu/todos")
 	} else {
@@ -162,7 +172,8 @@ func postLogin(c *gin.Context) {
 
 		_, span = tracer.Start(c.Request.Context(), "ログイン画面にリダイレクト")
 		defer span.End()
-		log.Println("ログイン画面にリダイレクト")
+		Logger(c, "ログイン画面にリダイレクト", span)
+		// log.Println("ログイン画面にリダイレクト")
 
 		c.Redirect(http.StatusFound, "/login")
 	}
@@ -176,7 +187,8 @@ func getLogout(c *gin.Context) {
 
 	_, span = tracer.Start(c.Request.Context(), "TOP画面にリダイレクト")
 	defer span.End()
-	log.Println("TOP画面にリダイレクト")
+	Logger(c, "TOP画面にリダイレクト", span)
+	// log.Println("TOP画面にリダイレクト")
 
 	c.Redirect(http.StatusMovedPermanently, "/")
 }
@@ -184,19 +196,22 @@ func getLogout(c *gin.Context) {
 func login(c *gin.Context, UserId string) {
 	_, span := tracer.Start(c.Request.Context(), "ログイン処理...")
 	defer span.End()
-	log.Println("ログイン処理...")
+	Logger(c, "ログイン処理...", span)
+	// log.Println("ログイン処理...")
 
 	session := sessions.Default(c)
 
 	_, span = tracer.Start(c.Request.Context(), "セッション設定")
 	defer span.End()
-	log.Println("セッション設定")
+	Logger(c, "セッション設定", span)
+	// log.Println("セッション設定")
 
 	session.Set("UserId", UserId)
 
 	_, span = tracer.Start(c.Request.Context(), "セッション保存")
 	defer span.End()
-	log.Println("セッション保存")
+	Logger(c, "セッション保存", span)
+	// log.Println("セッション保存")
 
 	session.Save()
 
@@ -206,19 +221,22 @@ func login(c *gin.Context, UserId string) {
 func logout(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "ログアウト処理...")
 	defer span.End()
-	log.Println("ログアウト処理...")
+	Logger(c, "ログアウト処理...", span)
+	// log.Println("ログアウト処理...")
 
 	session := sessions.Default(c)
 
 	_, span = tracer.Start(c.Request.Context(), "セッションクリア")
 	defer span.End()
-	log.Println("セッションクリア")
+	Logger(c, "セッションクリア", span)
+	// log.Println("セッションクリア")
 
 	session.Clear()
 
 	_, span = tracer.Start(c.Request.Context(), "セッション保存")
 	defer span.End()
-	log.Println("セッション保存")
+	Logger(c, "セッション保存", span)
+	// log.Println("セッション保存")
 
 	session.Save()
 

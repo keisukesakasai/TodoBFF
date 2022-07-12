@@ -7,7 +7,6 @@ import (
 	"log"
 	"todobff/config"
 
-	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -16,7 +15,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	oteltrace "go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -98,11 +96,4 @@ func initProvider() (func(context.Context) error, error) {
 	}
 
 	return tracerProvider.Shutdown, nil
-}
-
-func LogrusFields(span oteltrace.Span) logrus.Fields {
-	return logrus.Fields{
-		"span_id":  span.SpanContext().SpanID().String(),
-		"trace_id": span.SpanContext().TraceID().String(),
-	}
 }
