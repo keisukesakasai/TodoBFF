@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::051144531615:role/ADOTXrayCollector
+  name: otel-web-collector
+  namespace: tracing
+

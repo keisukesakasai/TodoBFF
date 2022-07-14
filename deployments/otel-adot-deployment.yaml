@@ -1,0 +1,28 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector
+  namespace: tracing
+spec:
+  image: public.ecr.aws/aws-observability/aws-otel-collector:v0.17.0
+  mode: deployment # Deploymentリソースとして作成(デフォルト)
+  serviceAccount: otel-web-collector
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4318"
+
+    processors:
+
+    exporters:
+      awsxray:
+        region: ap-northeast-1
+        
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [awsxray]
