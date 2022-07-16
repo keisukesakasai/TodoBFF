@@ -14,12 +14,12 @@ import (
 )
 
 func getSignup(c *gin.Context) {
-	LoggerAndCreateSpan(c, "ユーザ登録画面取得").End()
+	defer LoggerAndCreateSpan(c, "ユーザ登録画面取得").End()
 	generateHTML(c, nil, "signup", "layout", "signup", "public_navbar")
 }
 
 func postSignup(c *gin.Context) {
-	LoggerAndCreateSpan(c, "ユーザ登録").End()
+	defer LoggerAndCreateSpan(c, "ユーザ登録").End()
 	err := c.Request.ParseForm()
 	if err != nil {
 		log.Println(err)
@@ -34,7 +34,7 @@ func postSignup(c *gin.Context) {
 	"Email":"` + email + `",
 	"PassWord":"` + password + `"}`
 
-	LoggerAndCreateSpan(c, "UserAPI /createUser にポスト").End()
+	defer LoggerAndCreateSpan(c, "UserAPI /createUser にポスト").End()
 	rsp, err := otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/createUser",
@@ -52,17 +52,17 @@ func postSignup(c *gin.Context) {
 	UserId := email
 	login(c, UserId)
 
-	LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
+	defer LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
 	c.Redirect(http.StatusMovedPermanently, "/menu/todos")
 }
 
 func getLogin(c *gin.Context) {
-	LoggerAndCreateSpan(c, "ログイン画面取得").End()
+	defer LoggerAndCreateSpan(c, "ログイン画面取得").End()
 	generateHTML(c, nil, "login", "layout", "login", "public_navbar")
 }
 
 func postLogin(c *gin.Context) {
-	LoggerAndCreateSpan(c, "ログイン").End()
+	defer LoggerAndCreateSpan(c, "ログイン").End()
 	err := c.Request.ParseForm()
 	if err != nil {
 		log.Println(err)
@@ -96,7 +96,7 @@ func postLogin(c *gin.Context) {
 	password := c.Request.PostFormValue("password")
 	jsonStr = `{"PassWord":"` + password + `"}`
 
-	LoggerAndCreateSpan(c, "UserAPI /encrypt にポスト").End()
+	defer LoggerAndCreateSpan(c, "UserAPI /encrypt にポスト").End()
 	rsp, err = otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/encrypt",
@@ -119,55 +119,55 @@ func postLogin(c *gin.Context) {
 	if responseGetUser.ID == 0 {
 		log.Println("ユーザがいません")
 
-		LoggerAndCreateSpan(c, "ログイン画面にリダイレクト").End()
+		defer LoggerAndCreateSpan(c, "ログイン画面にリダイレクト").End()
 		c.Redirect(http.StatusFound, "/login")
 	} else if responseEncrypt.PassWord == responseGetUser.PassWord {
 		UserId := c.PostForm("email")
 		login(c, UserId)
 
-		LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
+		defer LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
 		c.Redirect(http.StatusMovedPermanently, "/menu/todos")
 	} else {
 		log.Println("PW が間違っています")
 
-		LoggerAndCreateSpan(c, "ログイン画面にリダイレクト").End()
+		defer LoggerAndCreateSpan(c, "ログイン画面にリダイレクト").End()
 		c.Redirect(http.StatusFound, "/login")
 	}
 }
 
 func getLogout(c *gin.Context) {
-	LoggerAndCreateSpan(c, "ログアウト").End()
+	defer LoggerAndCreateSpan(c, "ログアウト").End()
 	logout(c)
 
-	LoggerAndCreateSpan(c, "TOP画面にリダイレクト").End()
+	defer LoggerAndCreateSpan(c, "TOP画面にリダイレクト").End()
 	c.Redirect(http.StatusMovedPermanently, "/")
 }
 
 func login(c *gin.Context, UserId string) {
-	LoggerAndCreateSpan(c, "ログイン処理...").End()
+	defer LoggerAndCreateSpan(c, "ログイン処理...").End()
 
 	session := sessions.Default(c)
 
-	LoggerAndCreateSpan(c, "セッション設定").End()
+	defer LoggerAndCreateSpan(c, "セッション設定").End()
 	session.Set("UserId", UserId)
 
-	LoggerAndCreateSpan(c, "セッション保存").End()
+	defer LoggerAndCreateSpan(c, "セッション保存").End()
 	session.Save()
 
-	LoggerAndCreateSpan(c, "ログイン完了").End()
+	defer LoggerAndCreateSpan(c, "ログイン完了").End()
 }
 
 func logout(c *gin.Context) {
-	LoggerAndCreateSpan(c, "ログアウト処理...").End()
+	defer LoggerAndCreateSpan(c, "ログアウト処理...").End()
 
 	session := sessions.Default(c)
 
-	LoggerAndCreateSpan(c, "セッションクリア").End()
+	defer LoggerAndCreateSpan(c, "セッションクリア").End()
 
 	session.Clear()
 
-	LoggerAndCreateSpan(c, "セッション保存").End()
+	defer LoggerAndCreateSpan(c, "セッション保存").End()
 	session.Save()
 
-	LoggerAndCreateSpan(c, "ログアウト完了").End()
+	defer LoggerAndCreateSpan(c, "ログアウト完了").End()
 }

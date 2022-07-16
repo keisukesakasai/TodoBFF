@@ -14,12 +14,12 @@ import (
 )
 
 func top(c *gin.Context) {
-	LoggerAndCreateSpan(c, "TOP画面取得").End()
+	defer LoggerAndCreateSpan(c, "TOP画面取得").End()
 	generateHTML(c, "hello", "top", "layout", "top", "public_navbar")
 }
 
 func getIndex(c *gin.Context) {
-	LoggerAndCreateSpan(c, "TODO画面取得").End()
+	defer LoggerAndCreateSpan(c, "TODO画面取得").End()
 
 	UserId, isExist := c.Get("UserId")
 	if !isExist {
@@ -30,7 +30,7 @@ func getIndex(c *gin.Context) {
 	email := UserId.(string)
 	jsonStr1 := `{"Email":"` + email + `"}`
 
-	LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
+	defer LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
 	rsp1, err := otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/getUserByEmail",
@@ -54,7 +54,7 @@ func getIndex(c *gin.Context) {
 	user_id := strconv.Itoa(responseGetUser.ID)
 	jsonStr2 := `{"user_id":"` + string(user_id) + `"}`
 
-	LoggerAndCreateSpan(c, "TodoAPI /getTodosByEmail にポスト").End()
+	defer LoggerAndCreateSpan(c, "TodoAPI /getTodosByEmail にポスト").End()
 	rsp2, err := otelhttp.Post(
 		c.Request.Context(),
 		EpTodoAPI+"/getTodosByUser",
@@ -78,17 +78,17 @@ func getIndex(c *gin.Context) {
 	user.Name = responseGetUser.Name
 	user.Todos = getTodosByUserresponse.Todos
 
-	LoggerAndCreateSpan(c, "TODO画面取得").End()
+	defer LoggerAndCreateSpan(c, "TODO画面取得").End()
 	generateHTML(c, user, "index", "layout", "private_navbar", "index")
 }
 
 func getTodoNew(c *gin.Context) {
-	LoggerAndCreateSpan(c, "TODO作成画面取得").End()
+	defer LoggerAndCreateSpan(c, "TODO作成画面取得").End()
 	generateHTML(c, nil, "todoNew", "layout", "private_navbar", "todo_new")
 }
 
 func postTodoSave(c *gin.Context) {
-	LoggerAndCreateSpan(c, "TODO保存").End()
+	defer LoggerAndCreateSpan(c, "TODO保存").End()
 
 	UserId, isExist := c.Get("UserId")
 	if !isExist {
@@ -99,7 +99,7 @@ func postTodoSave(c *gin.Context) {
 	email := UserId.(string)
 	jsonStr1 := `{"Email":"` + email + `"}`
 
-	LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
+	defer LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
 	rsp1, err := otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/getUserByEmail",
@@ -123,7 +123,7 @@ func postTodoSave(c *gin.Context) {
 	user_id := strconv.Itoa(responseGetUser.ID)
 	content := c.Request.PostFormValue("content")
 
-	LoggerAndCreateSpan(c, "TodoAPI /createTodo にポスト").End()
+	defer LoggerAndCreateSpan(c, "TodoAPI /createTodo にポスト").End()
 	jsonStr2 := `{"Content":"` + content + `",
 	"User_Id":"` + user_id + `"}`
 
@@ -146,12 +146,12 @@ func postTodoSave(c *gin.Context) {
 		log.Println(err)
 	}
 
-	LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
+	defer LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
 	c.Redirect(http.StatusFound, "/menu/todos")
 }
 
 func getTodoEdit(c *gin.Context, id int) {
-	LoggerAndCreateSpan(c, "TODO編集画面取得").End()
+	defer LoggerAndCreateSpan(c, "TODO編集画面取得").End()
 
 	err := c.Request.ParseForm()
 	if err != nil {
@@ -163,7 +163,7 @@ func getTodoEdit(c *gin.Context, id int) {
 	email := UserId.(string)
 	jsonStr1 := `{"Email":"` + email + `"}`
 
-	LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
+	defer LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
 	rsp1, err := otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/getUserByEmail",
@@ -187,7 +187,7 @@ func getTodoEdit(c *gin.Context, id int) {
 	todo_id := strconv.Itoa(id)
 	jsonStr2 := `{"todo_id":"` + todo_id + `"}`
 
-	LoggerAndCreateSpan(c, "TodoAPI /getTodo にポスト").End()
+	defer LoggerAndCreateSpan(c, "TodoAPI /getTodo にポスト").End()
 	rsp2, err := otelhttp.Post(
 		c.Request.Context(),
 		EpTodoAPI+"/getTodo",
@@ -207,12 +207,12 @@ func getTodoEdit(c *gin.Context, id int) {
 		log.Println(err)
 	}
 
-	LoggerAndCreateSpan(c, "TODO編集画面取得").End()
+	defer LoggerAndCreateSpan(c, "TODO編集画面取得").End()
 	generateHTML(c, getTodoresponse, "todoEdit", "layout", "private_navbar", "todo_edit")
 }
 
 func postTodoUpdate(c *gin.Context, id int) {
-	LoggerAndCreateSpan(c, "TODO更新").End()
+	defer LoggerAndCreateSpan(c, "TODO更新").End()
 
 	err := c.Request.ParseForm()
 	if err != nil {
@@ -224,7 +224,7 @@ func postTodoUpdate(c *gin.Context, id int) {
 	email := UserId.(string)
 	jsonStr1 := `{"Email":"` + email + `"}`
 
-	LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
+	defer LoggerAndCreateSpan(c, "UserAPI /getUserByEmail にポスト").End()
 	rsp1, err := otelhttp.Post(
 		c.Request.Context(),
 		EpUserApi+"/getUserByEmail",
@@ -252,7 +252,7 @@ func postTodoUpdate(c *gin.Context, id int) {
 	"User_Id":"` + user_id + `",
 	"Todo_Id":"` + todo_id + `"}`
 
-	LoggerAndCreateSpan(c, "TodoAPI /updateTodo にポスト").End()
+	defer LoggerAndCreateSpan(c, "TodoAPI /updateTodo にポスト").End()
 	rsp2, err := otelhttp.Post(
 		c.Request.Context(),
 		EpTodoAPI+"/updateTodo",
@@ -272,18 +272,18 @@ func postTodoUpdate(c *gin.Context, id int) {
 		log.Println(err)
 	}
 
-	LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
+	defer LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
 	c.Redirect(http.StatusFound, "/menu/todos")
 }
 
 func getTodoDelete(c *gin.Context, id int) {
-	LoggerAndCreateSpan(c, "TODO削除").End()
+	defer LoggerAndCreateSpan(c, "TODO削除").End()
 
 	//--- TodoAPI deleteTodo への Post
 	todo_id := strconv.Itoa(id)
 	jsonStr1 := `{"todo_id":"` + todo_id + `"}`
 
-	LoggerAndCreateSpan(c, "TodoAPI /deleteTodo にポスト").End()
+	defer LoggerAndCreateSpan(c, "TodoAPI /deleteTodo にポスト").End()
 	rsp1, err := otelhttp.Post(
 		c.Request.Context(),
 		EpTodoAPI+"/deleteTodo",
@@ -303,6 +303,6 @@ func getTodoDelete(c *gin.Context, id int) {
 		log.Println(err)
 	}
 
-	LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
+	defer LoggerAndCreateSpan(c, "TODO画面にリダイレクト").End()
 	c.Redirect(http.StatusFound, "/menu/todos")
 }
