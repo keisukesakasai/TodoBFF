@@ -69,27 +69,21 @@ func StartMainServer() {
 
 func checkSession() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, span := tracer.Start(c.Request.Context(), "セッションチェック開始")
-		defer span.End()
-		Logger(c, "セッションチェック開始", span)
-		// log.Println("セッションチェック開始")
+		defer LoggerAndCreateSpan(c, "セッションチェック開始").End()
 
 		session := sessions.Default(c)
 		LoginInfo.UserID = session.Get("UserId")
 
 		if LoginInfo.UserID == nil {
-			log.Println(LoginInfo.UserID.(string) + " はログインしていません")
+			defer LoggerAndCreateSpan(c, LoginInfo.UserID.(string)+" はログインしていません").End()
 			c.Redirect(http.StatusMovedPermanently, "/login")
 			c.Abort()
 		} else {
-			log.Println(LoginInfo.UserID.(string) + " をセッション ID にセットしました")
+			defer LoggerAndCreateSpan(c, LoginInfo.UserID.(string)+" をセッション ID にセットしました").End()
 			c.Set("UserId", LoginInfo.UserID) // ユーザIDをセット
 			c.Next()
 		}
 
-		_, span = tracer.Start(c.Request.Context(), "セッションチェック終了")
-		defer span.End()
-		Logger(c, "セッションチェック終了", span)
-		// log.Println("セッションチェック終了")
+		defer LoggerAndCreateSpan(c, "セッションチェック終了").End()
 	}
 }
