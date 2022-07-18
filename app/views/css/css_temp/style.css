@@ -10,11 +10,27 @@ main {
   flex: 1;
 }
 
+.flex {
+  display: flex; /*横並び*/
+}
+
+.flex .image {
+  width: 640px; /*画像サイズ指定*/
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.flex .text {
+  margin: 0 0 0 20px;
+  padding: 0;
+}
+
 footer {
   width: 100%;
-  color: #212529;
+  color: #ffffff;
   text-align: center;
-  background-color: #ffffff;
   position: absolute;/*←絶対位置*/
   bottom: 0; /*下に固定*/
   opacity: 0.55;
