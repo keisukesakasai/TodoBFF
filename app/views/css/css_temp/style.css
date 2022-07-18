@@ -2,6 +2,22 @@ body {
   background-color: #fff;
   position: relative;
   font-family: "Mplus 1p";
+  display: flex;
+  flex-flow: column;
+  min-height: 100vh;
+}
+main {
+  flex: 1;
+}
+
+footer {
+  width: 100%;
+  color: #212529;
+  text-align: center;
+  background-color: #ffffff;
+  position: absolute;/*←絶対位置*/
+  bottom: 0; /*下に固定*/
+  opacity: 0.55;
 }
 
 body:before {

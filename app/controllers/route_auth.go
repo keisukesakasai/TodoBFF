@@ -15,7 +15,7 @@ import (
 
 func getSignup(c *gin.Context) {
 	defer LoggerAndCreateSpan(c, "ユーザ登録画面取得").End()
-	generateHTML(c, nil, "signup", "layout", "signup", "public_navbar")
+	generateHTML(c, nil, "signup", "layout", "signup", "public_navbar", "footer")
 }
 
 func postSignup(c *gin.Context) {
@@ -58,7 +58,7 @@ func postSignup(c *gin.Context) {
 
 func getLogin(c *gin.Context) {
 	defer LoggerAndCreateSpan(c, "ログイン画面取得").End()
-	generateHTML(c, nil, "login", "layout", "login", "public_navbar")
+	generateHTML(c, nil, "login", "layout", "login", "public_navbar", "footer")
 }
 
 func postLogin(c *gin.Context) {

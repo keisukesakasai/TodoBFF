@@ -15,7 +15,7 @@ import (
 
 func top(c *gin.Context) {
 	defer LoggerAndCreateSpan(c, "TOP画面取得").End()
-	generateHTML(c, "hello", "top", "layout", "top", "public_navbar")
+	generateHTML(c, "hello", "top", "layout", "top", "public_navbar", "footer")
 }
 
 func getIndex(c *gin.Context) {
@@ -79,12 +79,12 @@ func getIndex(c *gin.Context) {
 	user.Todos = getTodosByUserresponse.Todos
 
 	defer LoggerAndCreateSpan(c, "TODO画面取得").End()
-	generateHTML(c, user, "index", "layout", "private_navbar", "index")
+	generateHTML(c, user, "index", "layout", "private_navbar", "index", "footer")
 }
 
 func getTodoNew(c *gin.Context) {
 	defer LoggerAndCreateSpan(c, "TODO作成画面取得").End()
-	generateHTML(c, nil, "todoNew", "layout", "private_navbar", "todo_new")
+	generateHTML(c, nil, "todoNew", "layout", "private_navbar", "todo_new", "footer")
 }
 
 func postTodoSave(c *gin.Context) {
@@ -208,7 +208,7 @@ func getTodoEdit(c *gin.Context, id int) {
 	}
 
 	defer LoggerAndCreateSpan(c, "TODO編集画面取得").End()
-	generateHTML(c, getTodoresponse, "todoEdit", "layout", "private_navbar", "todo_edit")
+	generateHTML(c, getTodoresponse, "todoEdit", "layout", "private_navbar", "todo_edit", "footer")
 }
 
 func postTodoUpdate(c *gin.Context, id int) {
