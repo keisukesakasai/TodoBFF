@@ -24,6 +24,8 @@ var tracer = otel.Tracer("TodoBFF")
 func initProvider() (func(context.Context) error, error) {
 	ctx := context.Background()
 
+	var tracerProvider *sdktrace.TracerProvider
+
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String("TodoBFF"),
@@ -33,11 +35,9 @@ func initProvider() (func(context.Context) error, error) {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	var tracerProvider *sdktrace.TracerProvider
-
 	if deployEnv == "local" {
 		log.Println("Deploy Mode: " + "local")
-		traceExporter, _ := stdouttrace.New(
+		traceExporter, err := stdouttrace.New(
 			stdouttrace.WithPrettyPrint(),
 			// stdouttrace.WithWriter(os.Stderr),
 			stdouttrace.WithWriter(io.Discard),
@@ -57,9 +57,9 @@ func initProvider() (func(context.Context) error, error) {
 
 	if deployEnv == "prod" {
 		log.Println("Deploy Mode: " + "Prod")
-		conn, err := grpc.DialContext(ctx, "otel-collector-collector.tracing.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+		conn, err := grpc.DialContext(ctx, "otel-collector-collector.observability.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 		if err != nil {
-			return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
+			fmt.Println("failed to create gRPC connection to collector: %w", err)
 		}
 
 		// Set up a trace exporter
@@ -85,9 +85,10 @@ func initProvider() (func(context.Context) error, error) {
 			bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
 			tracerProvider = sdktrace.NewTracerProvider(
 				sdktrace.WithSampler(sdktrace.AlwaysSample()),
-				sdktrace.WithResource(res),
+				// sdktrace.WithResource(res),
 				sdktrace.WithSpanProcessor(bsp),
 				sdktrace.WithIDGenerator(idg),
+				sdktrace.WithResource(newResource()),
 			)
 		}
 
@@ -96,4 +97,13 @@ func initProvider() (func(context.Context) error, error) {
 	}
 
 	return tracerProvider.Shutdown, nil
+}
+
+func newResource() *resource.Resource {
+	var LogGroupNames [1]string
+	LogGroupNames[0] = "/aws/eks/fluentbit-cloudwatch/logs"
+	return resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.AWSLogGroupNamesKey.StringSlice(LogGroupNames[:]),
+	)
 }

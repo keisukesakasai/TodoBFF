@@ -60,13 +60,17 @@ func generateHTML(c *gin.Context, data interface{}, procname string, filenames .
 
 func LoggerAndCreateSpan(c *gin.Context, msg string) trace.Span {
 	_, span := tracer.Start(c.Request.Context(), msg)
+
+	SpanId := IdOtel2Xray(span.SpanContext().SpanID().String())
+	TraceId := IdOtel2Xray(span.SpanContext().TraceID().String())
+
 	span.SetAttributes(
 		attribute.Int("status", c.Writer.Status()),
 		attribute.String("method", c.Request.Method),
 		attribute.String("client_ip", c.ClientIP()),
 		attribute.String("message", msg),
-		attribute.String("span_id", span.SpanContext().SpanID().String()),
-		attribute.String("trace_id", span.SpanContext().TraceID().String()),
+		attribute.String("span_id", SpanId),
+		attribute.String("trace_id", TraceId),
 	)
 
 	start := time.Now()
@@ -86,9 +90,14 @@ func LoggerAndCreateSpan(c *gin.Context, msg string) trace.Span {
 		zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
 		zap.Duration("elapsed", time.Since(start)),
 		zap.String("message", msg),
-		zap.String("span_id", span.SpanContext().SpanID().String()),
-		zap.String("trace_id", span.SpanContext().TraceID().String()),
+		zap.String("span_id", TraceId),
+		zap.String("trace_id", SpanId),
 	)
 
 	return span
+}
+
+func IdOtel2Xray(OtelId string) string {
+	xrayId := "1-" + OtelId[0:8] + "-" + OtelId[8:]
+	return xrayId
 }

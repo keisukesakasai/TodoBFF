@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todobff
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: todoapp-otel-work.com
+spec:
+  selector:
+    app: todobff
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
