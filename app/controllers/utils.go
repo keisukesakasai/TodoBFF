@@ -61,8 +61,12 @@ func generateHTML(c *gin.Context, data interface{}, procname string, filenames .
 func LoggerAndCreateSpan(c *gin.Context, msg string) trace.Span {
 	_, span := tracer.Start(c.Request.Context(), msg)
 
-	SpanId := IdOtel2Xray(span.SpanContext().SpanID().String())
-	TraceId := IdOtel2Xray(span.SpanContext().TraceID().String())
+	// for ADOT
+	// SpanId := IdOtel2Xray(span.SpanContext().SpanID().String())
+	// TraceId := IdOtel2Xray(span.SpanContext().TraceID().String())
+
+	SpanId := span.SpanContext().SpanID().String()
+	TraceId := span.SpanContext().TraceID().String()
 
 	span.SetAttributes(
 		attribute.Int("status", c.Writer.Status()),
@@ -74,7 +78,9 @@ func LoggerAndCreateSpan(c *gin.Context, msg string) trace.Span {
 	)
 
 	start := time.Now()
-	logger, err := zap.NewDevelopment()
+	config := zap.NewProductionConfig()
+	config.Encoding = "json"
+	logger, err := config.Build()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,8 +96,8 @@ func LoggerAndCreateSpan(c *gin.Context, msg string) trace.Span {
 		zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
 		zap.Duration("elapsed", time.Since(start)),
 		zap.String("message", msg),
-		zap.String("span_id", TraceId),
-		zap.String("trace_id", SpanId),
+		zap.String("span_id", SpanId),
+		zap.String("trace_id", TraceId),
 	)
 
 	return span
