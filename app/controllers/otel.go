@@ -57,7 +57,7 @@ func initProvider() (func(context.Context) error, error) {
 
 	if deployEnv == "prod" {
 		log.Println("Deploy Mode: " + "Prod")
-		conn, err := grpc.DialContext(ctx, "otel-collector-collector.observability.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+		conn, err := grpc.DialContext(ctx, "opentelemetry-collector-collector.opentelemetry.svc.cluster.local:4318", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 		if err != nil {
 			fmt.Println("failed to create gRPC connection to collector: %w", err)
 		}
